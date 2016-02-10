@@ -3,7 +3,7 @@
 #define finalout2 7
 
 int  out, feedback, timer, T = 100; 
-float error, reference, perr, derr, ierr, kp, kd, ki, setpoint, lasterr = 0;
+float error, perr, derr, ierr, kp, kd, ki, setpoint, lasterr = 0,count =0;
 
 void setup() {
 	Serial.begin(9600);
@@ -15,14 +15,19 @@ void setup() {
     kp=100;
     kd=10;
     ki=0.0001;
-    reference = 2.5;
-    setpoint=4.5 + reference;
-    if (setpoint >5 )
-        setpoint -= 5;  
+     
 }
 
 void loop() {
     feedback = analogRead(motorout);
+
+    if(count==0){
+        setpoint=2.4 + feedback * 5.0 / 1024;
+        if (setpoint >5 )
+            setpoint -= 5; 
+        count++;
+    }
+    
     error = setpoint - feedback * 5.0 / 1024;
     perr = kp * error;
     derr = kd * (error - lasterr);

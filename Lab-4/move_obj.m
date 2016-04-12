@@ -27,8 +27,8 @@ function move_obj
 % *************************************************************************
     
 
-   
-    arduino=serial('COM9','BaudRate',9600); % create serial communication object on port COM4   
+%    
+    arduino=serial('COM11','BaudRate',9600); % create serial communication object on port COM4   
     fopen(arduino); % initiate arduino communication
 
 
@@ -44,16 +44,17 @@ function move_obj
     % for loop here for known number of iterations or end loop if you want
     % a flexible condition
     count=1;
-    r=0;
+    radius=0;
     thetafinal=0;
-    while count<6
+    theta=0;
+    while count < 11
         count = count +1;
         trigger(vid);
         pause(.5)
         im = getdata(vid,1);
-        %figure(1);
+        figure(1);
         
-        %imshow(im); % Shows image in a figure
+        imshow(im); % Shows image in a figure
 
         % Store separate RGB values in matrices
         r = im(:,:,1);
@@ -81,8 +82,8 @@ function move_obj
         % but be careful.
         object_g_area = bwareaopen(black_white_g, thresh_area);
         object_r_area = bwareaopen(black_white_r, thresh_area);
-        %figure(1);       
-        %imshow(object_r_area);
+%         figure(1);       
+%         imshow(object_r_area);
 %         figure(3);   
 %         imshow(object_g_area);
 %         figure(4);   
@@ -105,18 +106,19 @@ function move_obj
 
             % Calculate distance between centres
             dist = sqrt((x_r-x_g)^2 + (y_r-y_g)^2);
-            dist = dist*25/320
-            theta = 95-atand((x_g-x_r)/(y_g-y_r))
+            dist = dist*25/320;
+            theta = 95-atand((x_g-x_r)/(y_g-y_r));
             %dist 17 - 25
             %Uncomment this if you want to look at your centres
 %             figure(1);
 %             hold on
 %             imshow(im);
-%             plot([x_g, x_r], [y_g, y_r],'*')
+%             plot([x_g, x_r], [y_g, y_r],'*');
 %             text(540,400,num2str(dist));
 %             hold off 
         end
-        r=r+dist;
+        radius =  radius +dist;
+       
         thetafinal=thetafinal+theta;
         % *****************************************************************
         %    Rest of your logic for giving control instructions to Arduino
@@ -127,8 +129,15 @@ function move_obj
         
         
     end
-     fprintf(arduino,'%s',char(thetafinal/5)); % send answer variable content to arduino
-     fprintf(arduino,'%s',char(r/5));
+       radius =  radius/10
+       thetafinal = (thetafinal/10)
+       str1 = num2str(floor(thetafinal));
+       str2 = num2str(floor(radius));
+       str3 = strcat(str1,str2)
+      fwrite(arduino, str3);
+      % pause(1);
+      % send answer variable content to arduino
+      %fwrite(arduino, num2str(radius));  
      fclose(arduino); 
 
     stop(imaqfind); % Necessary operation for closing program
